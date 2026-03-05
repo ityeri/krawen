@@ -10,6 +10,9 @@ class HTTPResponseInfo:
     reason: str
     headers: dict[str, bytes]
 
+    def get_header(self, key: str) -> bytes:
+        return self.headers[key.lower()]
+
 @dataclass
 class HTTPResponseData:
     info: HTTPResponseInfo
