@@ -6,8 +6,11 @@ from yarl import URL
 
 @dataclass
 class EndpointPath:
-    method: MethodType
     url: URL
+    method: MethodType
+
+    def __hash__(self):
+        return hash((self.url, self.method))
 
 class MethodType(str, Enum):
     GET = 'GET'
