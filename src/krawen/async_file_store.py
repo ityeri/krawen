@@ -34,6 +34,8 @@ class AsyncLocalFileStore(AsyncFileStore):
 
 
     async def put_file(self, key: str, data: AsyncChunkedReader):
+        await data.open()
+
         async with aiofiles.open(self.get_file_path(key), 'wb') as f:
             while True:
                 chunk = await data.read_next_chunk()
