@@ -1,6 +1,5 @@
 import os
 from abc import ABC, abstractmethod
-from zoneinfo import reset_tzpath
 
 import aiofiles
 from aiofiles.threadpool.binary import AsyncBufferedReader
@@ -11,6 +10,9 @@ class AsyncChunkedReader(ABC):
     async def open(self): ...
     @abstractmethod
     async def close(self): ...
+    @abstractmethod
+    async def seek(self, position: int): ...
+
     @abstractmethod
     async def read_next_chunk(self) -> bytes: ...
 
@@ -39,6 +41,9 @@ class AsyncChunkedFileReader(AsyncChunkedReader):
         self._file = await aiofiles.open(self._path, 'rb')
     async def close(self):
         await self._file.close()
+    async def seek(self, position: int):
+        await self._file.seek(position)
+
     async def read_next_chunk(self) -> bytes:
         return await self._file.read(self._chunk_size)
 
