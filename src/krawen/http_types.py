@@ -15,7 +15,7 @@ class HttpResponseData:
     body: AsyncChunkedReader
 
 @dataclass
-class HttpPath:
+class EndpointPath:
     method: MethodType
     url: URL
 
