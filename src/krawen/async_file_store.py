@@ -12,10 +12,8 @@ from krawen.async_chunked_reader import AsyncChunkedReader, AsyncChunkedFileRead
 class AsyncFileStore(ABC):
     @abstractmethod
     async def put_file(self, key: str, data: AsyncChunkedReader): ...
-
     @abstractmethod
     async def get_file(self, key: str) -> AsyncChunkedReader: ...
-
     @abstractmethod
     async def rm_file(self, key: str): ...
 

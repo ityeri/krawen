@@ -21,10 +21,8 @@ class EndpointStore(ABC): # TODO rename
     """
     @abstractmethod
     async def put_endpoint(self, endpoint_path: EndpointPath, data: HttpResponseData, auto_update: bool = True): ...
-
     @abstractmethod
     async def rm_endpoint(self, endpoint_path: EndpointPath): ...
-
     @abstractmethod
     async def get_endpoint(self, endpoint_path: EndpointPath) -> HttpResponseData: ...
 
