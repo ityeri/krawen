@@ -7,12 +7,12 @@ from yarl import URL
 @dataclass
 class EndpointPath:
     url: URL
-    method: MethodType
+    method: HTTPMethod
 
     def __hash__(self):
         return hash((self.url, self.method))
 
-class MethodType(str, Enum):
+class HTTPMethod(str, Enum):
     GET = 'GET'
     HEAD = 'HEAD'
     POST = 'POST'
@@ -24,8 +24,8 @@ class MethodType(str, Enum):
     PATCH = 'PATCH'
 
     @classmethod
-    def from_name(cls, name: str) -> MethodType:
-        for method in MethodType:
+    def from_name(cls, name: str) -> HTTPMethod:
+        for method in HTTPMethod:
             if method.value == name:
                 return method
 

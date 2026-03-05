@@ -7,8 +7,8 @@ import aiofiles
 from yarl import URL
 
 from krawen.async_file_store import AsyncFileStore
-from krawen.endpoint_path import EndpointPath, MethodType
-from krawen.http_response_data import HttpResponseData, HttpResponseInfo
+from krawen.endpoint_path import EndpointPath, HTTPMethod
+from krawen.http_response_data import HTTPResponseData, HTTPResponseInfo
 
 
 class DuplicateEndpointError(Exception): ...
@@ -20,17 +20,17 @@ class EndpointStore(ABC): # TODO rename
     얘는 파일 관리 역할은 안함
     """
     @abstractmethod
-    async def put_endpoint(self, endpoint_path: EndpointPath, data: HttpResponseData, auto_update: bool = True): ...
+    async def put_endpoint(self, endpoint_path: EndpointPath, data: HTTPResponseData, auto_update: bool = True): ...
     @abstractmethod
     async def rm_endpoint(self, endpoint_path: EndpointPath): ...
     @abstractmethod
-    async def get_endpoint(self, endpoint_path: EndpointPath) -> HttpResponseData: ...
+    async def get_endpoint(self, endpoint_path: EndpointPath) -> HTTPResponseData: ...
 
 
 class JsonEndpointStore(EndpointStore):
     def __init__(self, json_file_path: str, file_store: AsyncFileStore):
         self.json_file_path: str = json_file_path
-        self.data: dict[EndpointPath, HttpResponseInfo] = dict()
+        self.data: dict[EndpointPath, HTTPResponseInfo] = dict()
         self.file_store: AsyncFileStore = file_store
 
     type JsonResponseInfo = dict[str, str | dict[str, str]]
@@ -41,12 +41,12 @@ class JsonEndpointStore(EndpointStore):
     @staticmethod
     def str_to_endpoint_path(text: str) -> EndpointPath:
         return EndpointPath(
-            method=MethodType.from_name(text.split(' ')[-1]),
+            method=HTTPMethod.from_name(text.split(' ')[-1]),
             url=URL(text.split(' ')[0])
         )
 
     @staticmethod
-    def response_info_to_json(response_info: HttpResponseInfo) -> JsonResponseInfo:
+    def response_info_to_json(response_info: HTTPResponseInfo) -> JsonResponseInfo:
         return {
             'http_version': response_info.http_version,
             'status_code': response_info.status_code,
@@ -57,8 +57,8 @@ class JsonEndpointStore(EndpointStore):
             }
         }
     @staticmethod
-    def json_to_response_info(data: JsonResponseInfo) -> HttpResponseInfo:
-        return HttpResponseInfo(
+    def json_to_response_info(data: JsonResponseInfo) -> HTTPResponseInfo:
+        return HTTPResponseInfo(
             http_version=data['http_version'],
             status_code=int(data['status_code']),
             reason=data['reason'],
@@ -90,7 +90,7 @@ class JsonEndpointStore(EndpointStore):
     async def run_save_job(self):
         asyncio.create_task(self.save())
 
-    async def put_endpoint(self, endpoint_path: EndpointPath, data: HttpResponseData, auto_update: bool = True):
+    async def put_endpoint(self, endpoint_path: EndpointPath, data: HTTPResponseData, auto_update: bool = True):
         if not auto_update and endpoint_path in self.data:
             raise DuplicateEndpointError()
 
@@ -100,8 +100,8 @@ class JsonEndpointStore(EndpointStore):
     async def rm_endpoint(self, endpoint_path: EndpointPath):
         del self.data[endpoint_path]
 
-    async def get_endpoint(self, endpoint_path: EndpointPath) -> HttpResponseData:
-        return HttpResponseData(
+    async def get_endpoint(self, endpoint_path: EndpointPath) -> HTTPResponseData:
+        return HTTPResponseData(
             info=self.data[endpoint_path],
             body=await self.file_store.get_file(self.endpoint_path_to_str(endpoint_path))
         )

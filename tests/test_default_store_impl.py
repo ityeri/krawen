@@ -3,7 +3,7 @@ import os
 
 from yarl import URL
 
-from krawen import EndpointPath, MethodType, HttpResponseData, HttpResponseInfo
+from krawen import EndpointPath, HTTPMethod, HTTPResponseData, HTTPResponseInfo
 from krawen.async_chunked_reader import AsyncChunkedFileReader
 from krawen.endpoint_store import JsonEndpointStore
 from krawen.async_file_store import AsyncLocalFileStore
@@ -19,11 +19,11 @@ endpoint_store = JsonEndpointStore('./run/endpoints.json', file_store=file_store
 async def main():
     await endpoint_store.put_endpoint(
         endpoint_path=EndpointPath(
-            method=MethodType.GET,
+            method=HTTPMethod.GET,
             url=URL('https://example.com')
         ),
-        data=HttpResponseData(
-            info=HttpResponseInfo(
+        data=HTTPResponseData(
+            info=HTTPResponseInfo(
                 http_version='1.0',
                 status_code=200,
                 reason='OK',

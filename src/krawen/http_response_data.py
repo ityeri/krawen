@@ -4,15 +4,15 @@ from krawen.async_chunked_reader import AsyncChunkedReader
 
 
 @dataclass
-class HttpResponseInfo:
+class HTTPResponseInfo:
     http_version: str
     status_code: int
     reason: str
     headers: dict[str, bytes]
 
 @dataclass
-class HttpResponseData:
-    info: HttpResponseInfo
+class HTTPResponseData:
+    info: HTTPResponseInfo
     body: AsyncChunkedReader
 
     def __post_init__(self):

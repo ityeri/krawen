@@ -3,8 +3,8 @@ from krawen import async_file_store
 from krawen import endpoint_store
 from krawen import utils
 from krawen.crawler import Crawler
-from krawen.endpoint_path import EndpointPath, MethodType
-from krawen.http_response_data import HttpResponseData, HttpResponseInfo
+from krawen.endpoint_path import EndpointPath, HTTPMethod
+from krawen.http_response_data import HTTPResponseData, HTTPResponseInfo
 from krawen.server import Server
 
 __all__ = [
@@ -17,7 +17,7 @@ __all__ = [
     'async_file_store',
 
     'EndpointPath',
-    'MethodType',
-    'HttpResponseData',
-    'HttpResponseInfo'
+    'HTTPMethod',
+    'HTTPResponseData',
+    'HTTPResponseInfo'
 ]
