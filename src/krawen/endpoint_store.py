@@ -1,11 +1,14 @@
 import asyncio
+import base64
 import json
 from abc import abstractmethod, ABC
+
 import aiofiles
 from yarl import URL
 
-from krawen.endpoint_path import EndpointPath
-from krawen.http_response_data import HttpResponseData
+from krawen.async_file_store import AsyncFileStore
+from krawen.endpoint_path import EndpointPath, MethodType
+from krawen.http_response_data import HttpResponseData, HttpResponseInfo
 
 
 class DuplicateEndpointError(Exception): ...
@@ -27,49 +30,80 @@ class EndpointStore(ABC): # TODO rename
 
 
 class JsonEndpointStore(EndpointStore):
-    def __init__(self, file_path: str):
-        super().__init__()
-        self.file_path: str = file_path
-        self.data: dict[URL, str] = dict()
+    def __init__(self, json_file_path: str, file_store: AsyncFileStore):
+        self.json_file_path: str = json_file_path
+        self.data: dict[EndpointPath, HttpResponseInfo] = dict()
+        self.file_store: AsyncFileStore = file_store
+
+    type JsonResponseInfo = dict[str, str | dict[str, str]]
+
+    @staticmethod
+    def endpoint_path_to_str(endpoint_path: EndpointPath) -> str:
+        return f'{endpoint_path.url} {endpoint_path.method}'
+    @staticmethod
+    def str_to_endpoint_path(text: str) -> EndpointPath:
+        return EndpointPath(
+            method=MethodType.from_name(text.split(' ')[-1]),
+            url=URL(text.split(' ')[0])
+        )
+
+    @staticmethod
+    def response_info_to_json(response_info: HttpResponseInfo) -> JsonResponseInfo:
+        return {
+            'http_version': response_info.http_version,
+            'status_code': response_info.status_code,
+            'reason': response_info.reason.decode('ascii'),
+            'headers': {
+                key: base64.b64encode(value).decode('ascii')
+                for key, value in response_info.headers.items()
+            }
+        }
+    @staticmethod
+    def json_to_response_info(data: JsonResponseInfo) -> HttpResponseInfo:
+        return HttpResponseInfo(
+            http_version=data['http_version'],
+            status_code=int(data['status_code']),
+            reason=data['reason'],
+            headers={
+                key: base64.b64decode(value)
+                for key, value in data['headers'].items()
+            }
+        )
 
 
     async def load(self):
-        async with aiofiles.open(self.file_path, mode='r', encoding='utf-8') as f:
+        async with aiofiles.open(self.json_file_path, mode='r', encoding='utf-8') as f:
             text = await f.read()
             raw_data: dict[str, str] = json.loads(text)
-            self.data = {URL(url): file_path for url, file_path in raw_data.items()}
+            self.data = {
+                self.str_to_endpoint_path(endpoint): self.json_to_response_info(json.loads(response_data))
+                for endpoint, response_data in raw_data.items()
+            }
 
-    async def save(self):
-        async with aiofiles.open(self.file_path, mode='w', encoding='utf-8') as f:
-            encoded_data = {str(url): file_path for url, file_path in self.data.items()}
-            text = json.dumps(encoded_data, ensure_ascii=False, indent=4)
+    async def save(self, indent: int | None = None):
+        async with aiofiles.open(self.json_file_path, mode='w', encoding='utf-8') as f:
+            json_data: dict[str, JsonEndpointStore.JsonResponseInfo] = {
+                self.endpoint_path_to_str(endpoint): self.response_info_to_json(response_info)
+                for endpoint, response_info in self.data.items()
+            }
+            text = json.dumps(json_data, ensure_ascii=False, indent=indent)
             await f.write(text)
 
     async def run_save_job(self):
-        asyncio.get_running_loop().create_task(self.save())
+        asyncio.create_task(self.save())
 
+    async def put_endpoint(self, endpoint_path: EndpointPath, data: HttpResponseData, auto_update: bool = True):
+        if not auto_update and endpoint_path in self.data:
+            raise DuplicateEndpointError()
 
-    async def put_endpoint(self, url: URL, file_path: str, auto_update: bool = True):
-        if auto_update:
-            self.data[url] = file_path
-        else:
-            if url not in self.data:
-                self.data[url] = file_path
-            else:
-                raise DuplicateEndpointError()
+        self.data[endpoint_path] = data.info
+        await self.file_store.put_file(self.endpoint_path_to_str(endpoint_path), data.body)
 
-        await self.run_save_job()
+    async def rm_endpoint(self, endpoint_path: EndpointPath):
+        del self.data[endpoint_path]
 
-    async def rm_url(self, url: URL):
-        try:
-            self.data.pop(url)
-        except KeyError:
-            raise EndpointNotFoundError()
-
-        await self.run_save_job()
-
-    async def get_url(self, url: URL) -> str:
-        try:
-            return self.data[url]
-        except KeyError:
-            raise EndpointNotFoundError()
+    async def get_endpoint(self, endpoint_path: EndpointPath) -> HttpResponseData:
+        return HttpResponseData(
+            info=self.data[endpoint_path],
+            body=await self.file_store.get_file(self.endpoint_path_to_str(endpoint_path))
+        )
