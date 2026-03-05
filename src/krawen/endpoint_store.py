@@ -4,6 +4,9 @@ from abc import abstractmethod, ABC
 import aiofiles
 from yarl import URL
 
+from krawen.endpoint_path import EndpointPath
+from krawen.http_response_data import HttpResponseData
+
 
 class DuplicateURLError(Exception): ...
 class URLNotFoundError(Exception): ...
@@ -14,13 +17,13 @@ class EndpointStore(ABC): # TODO rename
     얘는 파일 관리 역할은 안함
     """
     @abstractmethod
-    async def add_url(self, url: URL, file_path: str, auto_update: bool = True): ...
+    async def put_endpoint(self, endpoint_path: EndpointPath, data: HttpResponseData, auto_update: bool = True): ...
 
     @abstractmethod
-    async def rm_url(self, url: URL): ...
+    async def rm_endpoint(self, endpoint_path: EndpointPath): ...
 
     @abstractmethod
-    async def get_url(self, url: URL) -> str: ...
+    async def get_endpoint(self, endpoint_path: EndpointPath) -> HttpResponseData: ...
 
 
 class JsonEndpointStore(EndpointStore):
@@ -46,7 +49,7 @@ class JsonEndpointStore(EndpointStore):
         asyncio.get_running_loop().create_task(self.save())
 
 
-    async def add_url(self, url: URL, file_path: str, auto_update: bool = True):
+    async def put_endpoint(self, url: URL, file_path: str, auto_update: bool = True):
         if auto_update:
             self.data[url] = file_path
         else:

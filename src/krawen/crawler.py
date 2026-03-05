@@ -173,7 +173,7 @@ class Crawler:
                 async for chunk in res.content.iter_chunked(1024):
                     await f.write(chunk)
 
-            await self.url_manager.add_url(url, file_name)
+            await self.url_manager.put_endpoint(url, file_name)
 
 
     async def download_source_file(self, url: URL):
