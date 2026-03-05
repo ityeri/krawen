@@ -1,9 +1,8 @@
 import asyncio
 import logging
-import mimetypes
 import os.path
 from asyncio import Task
-from typing import Callable
+
 import aiofiles
 import bs4
 from aiohttp import ClientSession, NonHttpUrlClientError
@@ -12,7 +11,6 @@ from yarl import URL
 
 from krawen.endpoint_store import EndpointStore
 from krawen.utils import parsing_utils
-from krawen.utils.url_encoders import default_encoder
 
 
 class URLOutOfBoundError(Exception): ...
@@ -31,9 +29,6 @@ class Crawler:
 
         self.playwright: Playwright | None = None
         self.http_client: ClientSession | None = None
-
-        if not mimetypes.inited:
-            mimetypes.init()
 
 
     async def start(self):
