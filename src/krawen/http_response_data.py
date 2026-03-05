@@ -10,6 +10,9 @@ class HTTPResponseInfo:
     reason: str
     headers: dict[str, bytes]
 
+    def __post_init__(self):
+        self.headers = {key.lower(): value for key, value in self.headers.items()}
+
     def get_header(self, key: str) -> bytes:
         return self.headers[key.lower()]
     @property
@@ -24,5 +27,3 @@ class HTTPResponseData:
     info: HTTPResponseInfo
     body: AsyncChunkedReader
 
-    def __post_init__(self):
-        self.headers = {key.lower(): value for key, value in self.info.headers.items()}
