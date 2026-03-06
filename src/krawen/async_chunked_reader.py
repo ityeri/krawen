@@ -72,7 +72,10 @@ class AsyncClientResponseContentReader(AsyncChunkedReader):
     async def close(self): pass
 
     async def read_next_chunk(self) -> bytes:
-        return await anext(self._chunk_iterator)
+        try:
+            return await anext(self._chunk_iterator)
+        except StopAsyncIteration:
+            return bytes()
 
     async def __anext__(self):
         return await self.read_next_chunk()
