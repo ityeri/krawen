@@ -16,12 +16,8 @@ crawler = Crawler(endpoint_store=endpoint_store)
 
 async def main():
     async with crawler:
-        endpoint_path = EndpointPath(
-            url=URL('https://example.com'),
-            method=HTTPMethod.GET
-        )
-
-        await crawler.download(endpoint_path)
+        urls = await crawler.get_sub_urls(URL('https://example.com'))
+        for url in urls: print(url)
 
     await endpoint_store.save(indent=4)
 
