@@ -24,7 +24,7 @@ class HTTPResponseInfo:
         try:
             return self.get_headers(key)[0]
         except IndexError:
-            raise KeyError('Passed key does not exist')
+            raise KeyError('Passed header does not exist')
     @property
     def content_type(self) -> bytes | None:
         try:
