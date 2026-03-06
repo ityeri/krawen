@@ -5,9 +5,7 @@ from asyncio import Task
 
 import aiofiles
 import bs4
-import h11
 from aiohttp import ClientSession, NonHttpUrlClientError
-from multidict import MultiDictProxy
 from playwright.async_api import Playwright, async_playwright
 from yarl import URL
 
@@ -25,8 +23,8 @@ class NotHTMLPageError(Exception): ...
 class Crawler:
     def __init__(
             self,
-            root_host_url: URL | str | None,
             endpoint_store: EndpointStore,
+            root_host_url: URL | str | None = None,
     ):
         self.root_origin_url: URL | None = None
         try:
