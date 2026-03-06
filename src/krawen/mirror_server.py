@@ -33,7 +33,13 @@ class MirrorServer:
 
     def setup(self):
         router = APIRouter()
-        router.add_api_route('/{path:path}', self.on_route, methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+        router.add_api_route(
+            '/{path:path}',
+            self.on_route,
+            methods=[
+                'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'
+            ]
+        )
         self.app.include_router(router)
 
     async def start(self):
