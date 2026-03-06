@@ -27,13 +27,13 @@ async def main():
                 http_version='1.0',
                 status_code=200,
                 reason='OK',
-                headers={}
+                headers=[]
             ),
             body=AsyncChunkedFileReader('./run/example.html')
         )
     )
 
-    await endpoint_store.save()
+    await endpoint_store.save(indent=4)
 
 if __name__ == '__main__':
     asyncio.run(main())

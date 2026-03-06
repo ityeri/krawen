@@ -9,7 +9,7 @@ from fastapi.responses import StreamingResponse
 from yarl import URL
 
 from krawen.endpoint_store import EndpointStore, EndpointNotFoundError
-from krawen.utils import parsing_utils
+# from krawen.utils import is_text_content_type
 from krawen.utils.file import read_in_chunks
 
 
@@ -48,7 +48,7 @@ class Server:
         file_path = os.path.join(self.source_store_path, file_name)
         content_type, _ = mimetypes.guess_type(file_name)
 
-        if parsing_utils.is_text_content_type(content_type):
+        if "TODO":
             async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
                 body = await f.read()
                 return Response(content=body, media_type=content_type)
