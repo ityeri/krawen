@@ -1,3 +1,4 @@
+import bs4
 from aiohttp import ClientSession
 from playwright.async_api import Playwright, async_playwright, Browser, ViewportSize
 from playwright.async_api import Request
@@ -9,6 +10,8 @@ from krawen.endpoint_path import EndpointPath
 from krawen.endpoint_store import EndpointStore
 from krawen.http_response_data import HTTPResponseData
 from krawen.http_response_data import HTTPResponseInfo
+from krawen.utils import parsing_utils
+from krawen.utils.parsing_utils import parse_urls_from_tag_attr, to_absolute_url
 
 
 class URLOutOfBoundError(Exception): ...
@@ -80,50 +83,54 @@ class Crawler:
 
             return response_info
 
-    async def download_page_or_file(self, endpoint_path: EndpointPath, recursive: bool = False):
-        response_info = await self.download(endpoint_path)
+    async def get_sub_urls(self, url: URL) -> list[URL]:
+        urls: list[URL] = list()
+        context = await self.browser.new_context(
+            viewport=ViewportSize(width=1920, height=2160)
+        )
+        page = await context.new_page()
 
+        async def on_request(request: Request):
+            urls.append(URL(request.url))
 
-        if self.is_page(response_info) and recursive:
-            request_list: list[EndpointPath] = list()
-            context = await self.browser.new_context(
-                viewport=ViewportSize(width=1920, height=2160)
-            )
-            page = await context.new_page()
+        page.on('request', on_request)
 
-            async def on_request(request: Request):
-                request_list.append(EndpointPath(
-                    url=URL(request.url),
-                    method=HTTPMethod.from_name(request.method)
+        await page.goto(str(url))
+
+        html = await page.content()
+        soup = bs4.BeautifulSoup(html, features='html.parser')
+
+        for tag in soup.find_all(True):
+            attrs = tag.attrs
+
+            for key, value in attrs.items():
+                urls.extend(map(
+                    lambda u: URL(u),
+                    parse_urls_from_tag_attr(key, value)
                 ))
 
-            page.on('request', on_request)
+        await page.evaluate(
+            """
+            async () => {
+                await new Promise(resolve => {
+                    const timer = setInterval(() => {
+                        window.scrollBy(0, 500);
+                        if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight) {
+                            clearInterval(timer);
+                            resolve();
+                        }
+                    }, 50);
+                });
+            }
+            """
+        )
 
-            await page.goto(str(endpoint_path.url))
+        await page.wait_for_load_state('networkidle')
 
-            await page.evaluate(
-                """
-                async () => {
-                    await new Promise(resolve => {
-                        const timer = setInterval(() => {
-                            window.scrollBy(0, 500);
-                            if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight) {
-                                clearInterval(timer);
-                                resolve();
-                            }
-                        }, 50);
-                    });
-                }
-                """
-            )
+        await page.close()
+        await context.close()
 
-            await page.wait_for_load_state('networkidle')
-
-            for request in request_list:
-                print(request)
-
-            await page.close()
-            await context.close()
+        return urls
 
 
     def should_download(self, url: URL) -> bool:
