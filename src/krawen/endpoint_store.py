@@ -33,7 +33,7 @@ class JsonEndpointStore(EndpointStore):
         self.data: dict[EndpointPath, HTTPResponseInfo] = dict()
         self.file_store: AsyncFileStore = file_store
 
-    type JsonResponseInfo = dict[str, str | dict[str, str]]
+    type JsonResponseInfo = dict[str, str | tuple[tuple[str, str]]]
 
     @staticmethod
     def endpoint_path_to_str(endpoint_path: EndpointPath) -> str:
@@ -51,10 +51,10 @@ class JsonEndpointStore(EndpointStore):
             'http_version': response_info.http_version,
             'status_code': response_info.status_code,
             'reason': response_info.reason,
-            'headers': {
-                key: base64.b64encode(value).decode('ascii')
-                for key, value in response_info.headers.items()
-            }
+            'headers': [
+                [key, base64.b64encode(value).decode('ascii')]
+                for key, value in response_info.headers
+            ]
         }
     @staticmethod
     def json_to_response_info(data: JsonResponseInfo) -> HTTPResponseInfo:
@@ -62,10 +62,10 @@ class JsonEndpointStore(EndpointStore):
             http_version=data['http_version'],
             status_code=int(data['status_code']),
             reason=data['reason'],
-            headers={
-                key: base64.b64decode(value)
-                for key, value in data['headers'].items()
-            }
+            headers=[
+                (key, base64.b64decode(value))
+                for key, value in data['headers']
+            ]
         )
 
 
