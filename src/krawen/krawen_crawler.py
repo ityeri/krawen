@@ -16,7 +16,7 @@ class URLOutOfBoundError(Exception): ...
 class NotHTMLPageError(Exception): ...
 
 
-class Crawler:
+class KrawenCrawler:
     def __init__(
             self,
             endpoint_store: EndpointStore,
