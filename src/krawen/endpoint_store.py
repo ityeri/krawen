@@ -2,6 +2,7 @@ import asyncio
 import base64
 import json
 from abc import abstractmethod, ABC
+from xml.sax.saxutils import escape
 
 import aiofiles
 from yarl import URL
@@ -101,7 +102,10 @@ class JsonEndpointStore(EndpointStore):
         del self.data[endpoint_path]
 
     async def get_endpoint(self, endpoint_path: EndpointPath) -> HTTPResponseData:
-        return HTTPResponseData(
-            info=self.data[endpoint_path],
-            body=await self.file_store.get_file(self.endpoint_path_to_str(endpoint_path))
-        )
+        try:
+            return HTTPResponseData(
+                info=self.data[endpoint_path],
+                body=await self.file_store.get_file(self.endpoint_path_to_str(endpoint_path))
+            )
+        except KeyError:
+            raise EndpointNotFoundError()
