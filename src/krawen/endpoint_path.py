@@ -23,6 +23,8 @@ class HTTPMethod(str, Enum):
     TRACE = 'TRACE'
     PATCH = 'PATCH'
 
+    def __str__(self): return self.value
+
     @classmethod
     def from_name(cls, name: str) -> HTTPMethod:
         for method in HTTPMethod:
