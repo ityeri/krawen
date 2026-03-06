@@ -3,7 +3,7 @@ import os
 
 from yarl import URL
 
-from krawen import Crawler, EndpointPath, HTTPMethod
+from krawen import Crawler
 from krawen.async_file_store import AsyncLocalFileStore
 from krawen.endpoint_store import JsonEndpointStore
 
