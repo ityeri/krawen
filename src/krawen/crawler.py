@@ -120,14 +120,13 @@ class Crawler:
         await page.evaluate("""
             async () => {
                 await new Promise(resolve => {
-                    const distance = 500;
                     const timer = setInterval(() => {
-                        window.scrollBy(0, distance);
+                        window.scrollBy(0, 500);
                         if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight) {
                             clearInterval(timer);
                             resolve();
                         }
-                    }, 200);
+                    }, 50);
                 });
             }
         """)
@@ -231,3 +230,11 @@ class Crawler:
             return True
         else:
             return url.origin() == self.root_origin_url
+
+    @staticmethod
+    def is_page(response_info: HTTPResponseInfo) -> bool:
+        if response_info.get_first_header('Content-Disposition') == b'attachment':
+            return False
+        else:
+            return response_info.get_first_header('Content-Type') in \
+                [b'text/html', b'application/xhtml+xml']
