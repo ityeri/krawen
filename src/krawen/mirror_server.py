@@ -47,7 +47,7 @@ class MirrorServer:
 
     async def on_route(self, request: Request):
         endpoint_path = EndpointPath(
-            url=self.to_original_url(URL(request.url)),
+            url=self.to_original_url(URL(str(request.url.path))),
             method=HTTPMethod.from_name(request.method)
         )
         try:
@@ -55,13 +55,17 @@ class MirrorServer:
         except EndpointNotFoundError:
             raise HTTPException(status_code=404)
 
-        headers = [(key, value.decode('latin-1')) for key, value in response_data.info.headers]
+        await response_data.body.open()
 
-        return StreamingResponse(
+        actual_response = StreamingResponse(
             response_data.body,
-            headers=headers,
             status_code=response_data.info.status_code
         )
+
+        for key, value in response_data.info.headers:
+            actual_response.headers[key] = value.decode('latin-1')
+
+        return actual_response
 
     def to_original_url(self, url: URL) -> URL:
         return to_absolute_url(self.root_origin_url, url)
