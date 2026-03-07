@@ -11,13 +11,6 @@ DEFAULT_CHUNK_SIZE = 8192
 
 class AsyncChunkedReader(ABC, AsyncIterator[bytes]):
     @abstractmethod
-    async def open(self): ...
-    @abstractmethod
-    async def close(self): ...
-    # @abstractmethod
-    # async def reset(self): ...
-
-    @abstractmethod
     async def read_next_chunk(self) -> bytes:
         """
         if pointer is reached end, it should return None
@@ -38,18 +31,15 @@ class AsyncChunkedReader(ABC, AsyncIterator[bytes]):
 
 
 class AsyncChunkedFileReader(AsyncChunkedReader):
-    def __init__(self, path: str, chunk_size: int = DEFAULT_CHUNK_SIZE):
-        self._path: str = path
+    def __init__(self, file: AsyncBufferedReader, chunk_size: int = DEFAULT_CHUNK_SIZE):
         # aiofiles types are weird..
-        self._file: AsyncBufferedReader | None = None
+        self._file: AsyncBufferedReader = file
         self._chunk_size: int = chunk_size
 
-    async def open(self):
-        self._file = await aiofiles.open(self._path, 'rb')
-    async def close(self):
-        await self._file.close()
-    # async def reset(self):
-    #     await self._file.seek(0)
+    @classmethod
+    async def open(cls, path: str, chunk_size: int = DEFAULT_CHUNK_SIZE):
+        file = aiofiles.open(path, 'rb')
+        return cls(file, chunk_size)
 
     async def read_next_chunk(self) -> bytes:
         return await self._file.read(self._chunk_size)
@@ -72,9 +62,6 @@ class AsyncClientResponseContentReader(AsyncChunkedReader):
             client_response.content.iter_chunked(DEFAULT_CHUNK_SIZE)
         self._chunk_size = chunk_size
         self._total_size = client_response.content.total_bytes
-
-    async def open(self): pass
-    async def close(self): pass
 
     async def read_next_chunk(self) -> bytes:
         try:
