@@ -3,37 +3,26 @@ import os
 
 from yarl import URL
 
-from krawen import EndpointPath, HTTPMethod, HTTPResponseData, HTTPResponseInfo
-from krawen.async_chunked_reader import AsyncChunkedFileReader
-from krawen.endpoint_store import JsonEndpointStore
 from krawen.async_file_store import AsyncLocalFileStore
+from krawen.endpoint_store import JsonEndpointStore
+from krawen import KrawenCrawler, EndpointPath, HTTPMethod
 
 os.makedirs('./run/store', exist_ok=True)
-
-with open('./run/example.html', 'w') as f:
-    f.write('This is example content')
 
 file_store = AsyncLocalFileStore('./run/store')
 endpoint_store = JsonEndpointStore('./run/endpoints.json', file_store=file_store)
 
-async def main():
-    await endpoint_store.put_endpoint(
-        endpoint_path=EndpointPath(
-            method=HTTPMethod.GET,
-            url=URL('https://example.com')
-        ),
-        data=HTTPResponseData(
-            info=HTTPResponseInfo(
-                http_version='1.0',
-                status_code=200,
-                reason='OK',
-                headers=[]
-            ),
-            body=AsyncChunkedFileReader('./run/example.html')
-        )
-    )
+crawler = KrawenCrawler(endpoint_store=endpoint_store)
 
-    await endpoint_store.save(indent=4)
+async def main():
+    async with crawler:
+        endpoint_path = EndpointPath(
+            url=URL('https://example.com'),
+            method=HTTPMethod.GET
+        )
+
+        await crawler.download(endpoint_path)
+        await endpoint_store.save(indent=4)
 
 if __name__ == '__main__':
     asyncio.run(main())
