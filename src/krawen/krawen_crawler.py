@@ -156,5 +156,11 @@ class KrawenCrawler:
                 return False
         except KeyError: pass
 
-        return response_info.get_first_header('Content-Type') in \
-            [b'text/html', b'application/xhtml+xml']
+        page_headers = [b'text/html', b'application/xhtml+xml']
+        target_header = response_info.get_first_header('Content-Type')
+
+        for comparing_header in page_headers:
+            if comparing_header in target_header:
+                return True
+
+        return False
