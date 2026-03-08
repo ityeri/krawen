@@ -4,7 +4,7 @@ from playwright.async_api import Playwright, async_playwright, Browser, Viewport
 from playwright.async_api import Request
 from yarl import URL
 
-from krawen import HTTPMethod
+from krawen.endpoint_path import HTTPMethod
 from krawen.async_chunked_reader import AsyncClientResponseContentReader
 from krawen.endpoint_path import EndpointPath
 from krawen.endpoint_store import EndpointStore
