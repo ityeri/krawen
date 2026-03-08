@@ -8,7 +8,7 @@ from krawen.endpoint_store import EndpointStore, EndpointNotFoundError
 from krawen.utils import to_absolute_url
 
 
-class MirrorServer:
+class KrawenMirrorServer:
     def __init__(
             self,
             root_origin_url: URL | str,

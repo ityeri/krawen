@@ -3,7 +3,7 @@ import os
 
 from yarl import URL
 
-from krawen import MirrorServer
+from krawen import KrawenMirrorServer
 from krawen.async_file_store import AsyncLocalFileStore
 from krawen.endpoint_store import JsonEndpointStore
 
@@ -12,7 +12,7 @@ os.makedirs('./run/store', exist_ok=True)
 file_store = AsyncLocalFileStore('./run/store')
 endpoint_store = JsonEndpointStore('./run/endpoints.json', file_store=file_store)
 
-mirror_server = MirrorServer(
+mirror_server = KrawenMirrorServer(
     root_origin_url=URL('http://example.com'),
     endpoint_store=endpoint_store
 )

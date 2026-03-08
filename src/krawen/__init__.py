@@ -5,11 +5,11 @@ from krawen import utils
 from krawen.krawen_crawler import KrawenCrawler
 from krawen.endpoint_path import EndpointPath, HTTPMethod
 from krawen.http_response_data import HTTPResponseData, HTTPResponseInfo
-from krawen.mirror_server import MirrorServer
+from krawen.krawen_mirror_server import KrawenMirrorServer
 
 __all__ = [
     'KrawenCrawler',
-    'MirrorServer',
+    'KrawenMirrorServer',
 
     'utils',
 
