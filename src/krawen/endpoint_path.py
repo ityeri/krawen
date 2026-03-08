@@ -10,7 +10,8 @@ class EndpointPath:
     method: HTTPMethod
 
     def __post_init__(self):
-        self.url = self.url.with_path('/')
+        if not self.url.path.endswith('/'):
+            self.url = self.url / ''
 
     def __hash__(self):
         return hash((self.url, self.method))
