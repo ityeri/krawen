@@ -20,11 +20,11 @@ class KrawenCrawler:
     def __init__(
             self,
             endpoint_store: EndpointStore,
-            root_host_url: URL | str | None = None,
+            root_origin_url: URL | str | None = None,
     ):
         self.root_origin_url: URL | None = None
         try:
-            converted_host_url = URL(root_host_url)
+            converted_host_url = URL(root_origin_url)
             self.root_origin_url: URL = converted_host_url.origin()
         except TypeError: pass
 
