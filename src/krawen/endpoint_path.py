@@ -13,6 +13,8 @@ class EndpointPath:
         if not self.url.path.endswith('/'):
             self.url = self.url / ''
 
+        return self.url.with_path(self.url.path + '/')
+
     def __hash__(self):
         return hash((self.url, self.method))
 
