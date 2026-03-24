@@ -6,6 +6,7 @@ from krawen.krawen_crawler import KrawenCrawler
 from krawen.endpoint_path import EndpointPath, HTTPMethod
 from krawen.http_response_data import HTTPResponseData, HTTPResponseInfo
 from krawen.krawen_mirror_server import KrawenMirrorServer
+from krawen import run
 
 __all__ = [
     'KrawenCrawler',
@@ -19,5 +20,7 @@ __all__ = [
     'EndpointPath',
     'HTTPMethod',
     'HTTPResponseData',
-    'HTTPResponseInfo'
+    'HTTPResponseInfo',
+
+    'run'
 ]

@@ -299,6 +299,7 @@ dependencies = [
     { name = "bs4" },
     { name = "fastapi" },
     { name = "playwright" },
+    { name = "reger" },
     { name = "uvicorn" },
     { name = "yarl" },
 ]
@@ -317,6 +318,7 @@ requires-dist = [
     { name = "dotenv", marker = "extra == 'dev'", specifier = ">=0.9.9" },
     { name = "fastapi", specifier = ">=0.121.1" },
     { name = "playwright", specifier = ">=1.58.0" },
+    { name = "reger", git = "https://github.com/ityeri/reger.git" },
     { name = "uvicorn", specifier = ">=0.38.0" },
     { name = "yarl", specifier = ">=1.22.0" },
 ]
@@ -499,6 +501,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/82/ed/0301aeeac3e5353ef
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0b/d7/1959b9648791274998a9c3526f6d0ec8fd2233e4d4acce81bbae76b44b2a/python_dotenv-1.2.2-py3-none-any.whl", hash = "sha256:1d8214789a24de455a8b8bd8ae6fe3c6b69a5e3d64aa8a8e5d68e694bbcb285a", size = 22101, upload-time = "2026-03-01T16:00:25.09Z" },
 ]
+
+[[package]]
+name = "reger"
+version = "0.1.1"
+source = { git = "https://github.com/ityeri/reger.git#e903c8f2686b1aad2ed6114bb52e77f9dd4846c2" }
 
 [[package]]
 name = "soupsieve"
