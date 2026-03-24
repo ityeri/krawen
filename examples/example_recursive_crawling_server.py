@@ -14,6 +14,7 @@ dotenv.load_dotenv()
 os.makedirs('./run/store', exist_ok=True)
 
 root_origin_url = URL(os.getenv('KRAWEN_ROOT_HOST_URL'))
+print(root_origin_url)
 
 file_store = AsyncLocalFileStore('./run/store')
 endpoint_store = JsonEndpointStore('./run/endpoints.json', file_store=file_store)
@@ -75,6 +76,7 @@ async def recursive_crawling():
 
 async def main():
     await endpoint_store.load()
+    mirror_server.setup()
 
     async with crawler:
         crawling_task = asyncio.create_task(recursive_crawling())
