@@ -4,17 +4,14 @@ from playwright.async_api import Playwright, async_playwright, Browser, Viewport
 from playwright.async_api import Request
 from yarl import URL
 
-from krawen.endpoint_path import HTTPMethod
 from krawen.async_chunked_reader import AsyncClientResponseContentReader
 from krawen.endpoint_path import EndpointPath
+from krawen.endpoint_path import HTTPMethod
 from krawen.endpoint_store import EndpointStore
+from krawen.exceptions import URLNotAbsoluteError, URLOutOfBoundError
 from krawen.http_response_data import HTTPResponseData
 from krawen.http_response_data import HTTPResponseInfo
 from krawen.utils import parse_urls_from_tag_attr, to_absolute_url
-
-
-class URLOutOfBoundError(Exception): ...
-class URLNotAbsoluteError(Exception): ...
 
 
 class KrawenCrawler:

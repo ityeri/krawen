@@ -2,6 +2,7 @@ from krawen import async_chunked_reader
 from krawen import async_file_store
 from krawen import endpoint_store
 from krawen import utils
+from krawen import exceptions
 from krawen.krawen_crawler import KrawenCrawler
 from krawen.endpoint_path import EndpointPath, HTTPMethod
 from krawen.http_response_data import HTTPResponseData, HTTPResponseInfo
@@ -13,6 +14,7 @@ __all__ = [
     'KrawenMirrorServer',
 
     'utils',
+    'exceptions',
 
     'async_chunked_reader',
     'async_file_store',
