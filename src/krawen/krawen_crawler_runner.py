@@ -11,14 +11,14 @@ class KrawenCrawlerRunner:
     def __init__(
             self,
             crawler: KrawenCrawler,
-            root_requests: set[EndpointPath],
-            tick_interval: float = 0.1
+            seed_requests: set[EndpointPath],
+            tick_interval: float = 0.5
     ):
         self.crawler: KrawenCrawler = crawler
         self.tick_interval: float = tick_interval
         self.logger: logging.Logger = logging.getLogger(self.__class__.__name__)
 
-        self.waiting_requests: set[EndpointPath] = root_requests
+        self.waiting_requests: set[EndpointPath] = seed_requests
         self.running_tasks: set[Task] = set()
 
     async def init(self):
