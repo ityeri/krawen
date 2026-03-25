@@ -152,7 +152,10 @@ class KrawenCrawler:
         if self.root_origin_url is None:
             return True
         else:
-            return url.origin() == self.root_origin_url
+            try:
+                return url.origin() == self.root_origin_url
+            except ValueError:
+                return False
 
     @staticmethod
     def is_page(response_info: HTTPResponseInfo) -> bool:
