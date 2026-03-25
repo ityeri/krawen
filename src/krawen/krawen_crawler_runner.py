@@ -44,6 +44,7 @@ class KrawenCrawlerRunner:
                     url=to_absolute_url(endpoint_path.url, url),
                     method=HTTPMethod.GET
                 ) for url in sub_urls
+                if to_absolute_url(endpoint_path.url, url).is_absolute()
             ]
 
             self.waiting_requests.update(new_found_requests)
