@@ -56,9 +56,10 @@ class KrawenCrawlerRunner:
             self.logger.error(f'Url "{endpoint_path.url}" is out of bound')
         except URLNotAbsoluteError:
             self.logger.error(f'Url "{endpoint_path.url}" is not absolute')
+        except asyncio.TimeoutError:
+            self.logger.error(f'Request for url "{endpoint_path.url}" is timed out')
         except Exception as e:
             self.logger.exception(f'Unknown error occurred while processing endpoint "{endpoint_path.url}": ')
-            # TODO url validate
 
     async def start(self):
         while True:
