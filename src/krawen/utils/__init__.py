@@ -11,7 +11,7 @@ def to_absolute_url(origin_url: URL, target_url: URL) -> URL:
         return origin_url.join(target_url)
 
 
-def parse_urls_from_tag_attr(key: str, value: str) -> list[str]:
+def parse_elements_from_tag_attr(key: str, value: str) -> list[str]:
     if isinstance(value, list):
         return value
     else:
@@ -29,5 +29,5 @@ def is_valid_url(url: URL) -> bool:
 __all__ = [
     'setup_logging',
     'to_absolute_url',
-    'parse_urls_from_tag_attr'
+    'parse_elements_from_tag_attr'
 ]

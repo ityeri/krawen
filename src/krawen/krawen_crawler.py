@@ -11,7 +11,7 @@ from krawen.endpoint_store import EndpointStore
 from krawen.exceptions import URLNotAbsoluteError, URLOutOfBoundError
 from krawen.http_response_data import HTTPResponseData
 from krawen.http_response_data import HTTPResponseInfo
-from krawen.utils import parse_urls_from_tag_attr, to_absolute_url
+from krawen.utils import parse_elements_from_tag_attr, to_absolute_url
 
 
 class KrawenCrawler:
@@ -99,7 +99,7 @@ class KrawenCrawler:
                 for key, value in attrs.items():
                     urls.extend(map(
                         lambda u: to_absolute_url(target_url, URL(u)),
-                        parse_urls_from_tag_attr(key, value)
+                        parse_elements_from_tag_attr(key, value)
                     ))
 
             return urls
