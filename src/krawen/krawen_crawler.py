@@ -1,3 +1,4 @@
+import aiohttp
 import bs4
 from aiohttp import ClientSession
 from playwright.async_api import Playwright, async_playwright, Browser, ViewportSize
@@ -35,7 +36,10 @@ class KrawenCrawler:
     async def start(self):
         self.playwright = await async_playwright().start()
         self.browser = await self.playwright.firefox.launch()
-        self.http_client = ClientSession()
+        self.http_client = ClientSession(
+            max_line_size=1024 * 16,
+            max_field_size=1024 * 16,
+        )
 
     async def stop(self):
         await self.playwright.stop()
