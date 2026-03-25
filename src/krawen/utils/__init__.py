@@ -16,7 +16,7 @@ def parse_urls_from_tag_attr(key: str, value: str) -> list[str]:
         return value
     else:
         if key.lower() == 'srcset':
-            return [part.split()[0] for part in value.split(", ")]
+            return [part.strip() for part in value.split(",")]
         else:
             return [value]
 
