@@ -84,12 +84,12 @@ class KrawenCrawler:
 
             return response_info
 
-    async def get_page_sub_urls(self, target_url: URL) -> list[URL]:
+    async def get_page_sub_urls(self, target_url: URL) -> set[URL]:
         if not target_url.is_absolute():
             raise URLNotAbsoluteError(f'Passed url "{target_url}" is not absolute')
 
         async with self.http_client.get(target_url) as response:
-            urls: list[URL] = list()
+            urls: set[URL] = set()
             html = await response.content.read()
             soup = bs4.BeautifulSoup(html, features='html.parser')
 
@@ -97,10 +97,11 @@ class KrawenCrawler:
                 attrs = tag.attrs
 
                 for key, value in attrs.items():
-                    urls.extend(map(
-                        lambda u: to_absolute_url(target_url, URL(u)),
-                        parse_elements_from_tag_attr(key, value)
-                    ))
+                    for sub_value in parse_elements_from_tag_attr(key, value):
+                        try:
+                            urls.add(to_absolute_url(target_url, URL(sub_value)))
+                        except ValueError:
+                            pass
 
             return urls
 
