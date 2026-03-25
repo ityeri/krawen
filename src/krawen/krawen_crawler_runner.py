@@ -5,7 +5,7 @@ from asyncio import Task
 from krawen import EndpointPath, HTTPMethod
 from krawen import KrawenCrawler
 from krawen.exceptions import URLOutOfBoundError, URLNotAbsoluteError
-from krawen.utils import to_absolute_url
+from krawen.utils import to_absolute_url, is_valid_url
 
 
 class KrawenCrawlerRunner:
@@ -44,7 +44,7 @@ class KrawenCrawlerRunner:
                     url=to_absolute_url(endpoint_path.url, url),
                     method=HTTPMethod.GET
                 ) for url in sub_urls
-                if to_absolute_url(endpoint_path.url, url).is_absolute()
+                if is_valid_url(to_absolute_url(endpoint_path.url, url))
             ]
 
             self.waiting_requests.update(new_found_requests)

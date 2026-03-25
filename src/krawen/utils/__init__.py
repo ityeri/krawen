@@ -20,6 +20,11 @@ def parse_urls_from_tag_attr(key: str, value: str) -> list[str]:
         else:
             return [value]
 
+def is_valid_url(url: URL) -> bool:
+    if url.port is None:
+        return False
+    return True
+
 
 __all__ = [
     'setup_logging',
