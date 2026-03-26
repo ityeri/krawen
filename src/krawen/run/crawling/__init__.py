@@ -5,15 +5,68 @@ import os
 import reger
 from yarl import URL
 
-from krawen import KrawenCrawler
+from krawen import KrawenCrawler, EndpointPath, HTTPMethod
 from krawen.async_file_store import AsyncLocalFileStore
 from krawen.endpoint_store import JsonEndpointStore
+from krawen.krawen_crawler_runner import KrawenCrawlerRunner
+
+
+async def run_autosave(json_store: JsonEndpointStore, interval: float):
+    while True:
+        await json_store.save()
+        await asyncio.sleep(interval)
 
 
 async def main():
-    ...
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'seed_urls', help='Seed url', nargs='+'
+    )
+    parser.add_argument(
+        '-t', '--target',
+        help='Crawling target url', default=None, nargs='?'
+    )
+    parser.add_argument(
+        '-d', '--dir',
+        help='Directory path of working dir (must contain endpoints.json, store/ dir)', default='./', nargs='?'
+    )
+    parser.add_argument(
+        '--save-interval', type=float,
+        help='Autosave interval', default=1, nargs='?'
+    )
+    parser.add_argument(
+        '--tick-interval', type=float,
+        help='Crawler tick interval', default=0.5, nargs='?'
+    )
+    args = parser.parse_args()
+
+    seed_urls = map(URL, args.seed_urls)
+    root_origin_url = URL(args.target) if args.target is not None else None
+    working_dir = args.dir
+    autosave_interval = args.save_interval
+    tick_interval = args.tick_interval
+
+    file_store = AsyncLocalFileStore(os.path.join(working_dir, 'store/'))
+    endpoint_store = JsonEndpointStore(os.path.join(working_dir, 'endpoints.json'), file_store=file_store)
+    crawler = KrawenCrawler(endpoint_store=endpoint_store, root_origin_url=root_origin_url)
+    crawler_runner = KrawenCrawlerRunner(
+        crawler,
+        seed_requests={EndpointPath(URL(seed_url), HTTPMethod.GET) for seed_url in seed_urls},
+        tick_interval=tick_interval
+    )
+
+    reger.setup_logging()
+    await endpoint_store.load()
+
+    async with crawler_runner:
+        crawling_task = asyncio.create_task(crawler_runner.start())
+        autosave_task = asyncio.create_task(run_autosave(endpoint_store, autosave_interval))
+
+        await crawling_task
+        autosave_task.cancel()
 
 
 __all__ = [
-    'main'
+    'main',
+    'run_autosave'
 ]
