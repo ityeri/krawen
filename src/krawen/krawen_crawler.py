@@ -76,15 +76,11 @@ class KrawenCrawler:
                 ]
             )
 
-    async def download(self, endpoint_path: EndpointPath, exists_skip: bool = False):
+    async def download(self, endpoint_path: EndpointPath):
         if not endpoint_path.url.is_absolute():
             raise URLNotAbsoluteError(f'Passed url "{endpoint_path.url}" is not absolute')
         if not self.should_download(endpoint_path.url):
             raise URLOutOfBoundError(f'URL "{endpoint_path.url}" : {endpoint_path.method} is out of processing bound')
-
-        if exists_skip:
-            if self.is_exists(endpoint_path):
-                return
 
         async with self.http_client.request(
                 url=endpoint_path.url,
