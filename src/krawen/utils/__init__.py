@@ -26,5 +26,6 @@ def is_valid_url(url: URL) -> bool:
 
 __all__ = [
     'to_absolute_url',
-    'parse_elements_from_tag_attr'
+    'parse_elements_from_tag_attr',
+    'is_valid_url'
 ]
