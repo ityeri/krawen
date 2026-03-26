@@ -60,7 +60,7 @@ class KrawenCrawlerRunner:
         try:
             await self.processing_request(endpoint_path)
         except URLOutOfBoundError:
-            self.logger.error(f'Url "{endpoint_path.url}" is out of bound')
+            pass
         except URLNotAbsoluteError:
             self.logger.error(f'Url "{endpoint_path.url}" is not absolute')
         except asyncio.TimeoutError:
