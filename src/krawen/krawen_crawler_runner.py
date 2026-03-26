@@ -13,10 +13,12 @@ class KrawenCrawlerRunner:
             self,
             crawler: KrawenCrawler,
             seed_requests: set[EndpointPath],
-            tick_interval: float = 0.5
+            tick_interval: float = 0.5,
+            exists_skip: bool = True
     ):
         self.crawler: KrawenCrawler = crawler
         self.tick_interval: float = tick_interval
+        self.exists_skip: bool = exists_skip
         self.logger: logging.Logger = logging.getLogger(self.__class__.__name__)
 
         self.waiting_requests: set[EndpointPath] = seed_requests
@@ -33,7 +35,10 @@ class KrawenCrawlerRunner:
         await self.stop()
 
     async def processing_request(self, endpoint_path: EndpointPath):
-        response_info = await self.crawler.download(endpoint_path)
+        response_info = await self.crawler.download(endpoint_path, self.exists_skip)
+
+        if response_info is None:
+            self.logger.info(f'Url "{endpoint_path.url}" is already exists. skip download')
 
         if self.crawler.is_page(response_info):
             # sub_requests = await crawler.get_network_requests(endpoint_path.url)

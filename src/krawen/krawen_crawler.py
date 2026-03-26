@@ -8,7 +8,7 @@ from yarl import URL
 from krawen.async_chunked_reader import AsyncClientResponseContentReader
 from krawen.endpoint_path import EndpointPath
 from krawen.endpoint_path import HTTPMethod
-from krawen.endpoint_store import EndpointStore
+from krawen.endpoint_store import EndpointStore, EndpointNotFoundError
 from krawen.exceptions import URLNotAbsoluteError, URLOutOfBoundError
 from krawen.http_response_data import HTTPResponseData
 from krawen.http_response_data import HTTPResponseInfo
@@ -56,11 +56,18 @@ class KrawenCrawler:
         await self.stop()
 
 
-    async def download(self, endpoint_path: EndpointPath) -> HTTPResponseInfo:
+    async def download(self, endpoint_path: EndpointPath, exists_skip: bool = False) -> HTTPResponseInfo | None:
         if not endpoint_path.url.is_absolute():
             raise URLNotAbsoluteError(f'Passed url "{endpoint_path.url}" is not absolute')
         if not self.should_download(endpoint_path.url):
             raise URLOutOfBoundError(f'URL "{endpoint_path.url}" : {endpoint_path.method} is out of processing bound')
+
+        if exists_skip:
+            try:
+                await self.endpoint_store.get_endpoint(endpoint_path)
+                return None
+            except EndpointNotFoundError:
+                pass
 
         async with self.http_client.request(
                 url=endpoint_path.url,
