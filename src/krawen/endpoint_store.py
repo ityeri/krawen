@@ -110,6 +110,9 @@ class JsonEndpointStore(EndpointStore):
             )
         except KeyError:
             raise EndpointNotFoundError()
+        except FileNotFoundError:
+            del self._data[endpoint_path]
+            raise EndpointNotFoundError()
 
     async def contains(self, endpoint_path: EndpointPath) -> bool:
         return endpoint_path in self._data
