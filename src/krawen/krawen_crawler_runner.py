@@ -36,7 +36,7 @@ class KrawenCrawlerRunner:
 
     async def processing_request(self, endpoint_path: EndpointPath):
         if await self.crawler.is_exists(endpoint_path):
-            self.logger.info(f'Url "{endpoint_path.url}" is already exists. skip download')
+            self.logger.warning(f'Url "{endpoint_path.url}" is already exists. skip download')
         else:
             await self.crawler.download(endpoint_path)
 
