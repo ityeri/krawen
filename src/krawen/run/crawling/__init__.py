@@ -59,7 +59,7 @@ async def main():
     await endpoint_store.load()
 
     async with crawler_runner:
-        crawling_task = asyncio.create_task(crawler_runner.start())
+        crawling_task = asyncio.create_task(crawler_runner.run())
         autosave_task = asyncio.create_task(run_autosave(endpoint_store, autosave_interval))
 
         await crawling_task

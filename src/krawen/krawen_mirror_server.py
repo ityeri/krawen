@@ -34,7 +34,7 @@ class KrawenMirrorServer:
         )
         self.app.include_router(router)
 
-    async def start(self):
+    async def run(self):
         config = uvicorn.Config(
             self.app,
             host=self.api_host,

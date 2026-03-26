@@ -61,7 +61,7 @@ class KrawenCrawlerRunner:
         except Exception as e:
             self.logger.exception(f'Unknown error occurred while processing endpoint "{endpoint_path.url}": ')
 
-    async def start(self):
+    async def run(self):
         while True:
             for endpoint_path in self.waiting_requests:
                 task = asyncio.create_task(self.processing_request_wrap(endpoint_path))

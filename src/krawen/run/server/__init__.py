@@ -32,7 +32,7 @@ async def main():
     await endpoint_store.load()
     mirror_server.setup()
 
-    await mirror_server.start()
+    await mirror_server.run()
 
 
 __all__ = [

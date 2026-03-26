@@ -80,7 +80,7 @@ async def main():
 
     async with crawler:
         crawling_task = asyncio.create_task(recursive_crawling())
-        server_task = asyncio.create_task(mirror_server.start())
+        server_task = asyncio.create_task(mirror_server.run())
         auto_save_task = asyncio.create_task(auto_save())
 
         await crawling_task

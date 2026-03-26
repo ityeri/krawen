@@ -20,7 +20,7 @@ mirror_server = KrawenMirrorServer(
 async def main():
     mirror_server.setup()
     await endpoint_store.load()
-    await mirror_server.start()
+    await mirror_server.run()
 
 if __name__ == '__main__':
     asyncio.run(main())
