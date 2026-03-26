@@ -46,7 +46,7 @@ class KrawenCrawlerRunner:
                 # sub_requests = await crawler.get_network_requests(endpoint_path.url)
                 sub_urls = await self.crawler.get_page_sub_urls(endpoint_path.url)
 
-                new_found_requests = [
+                new_endpoint_paths = [
                     EndpointPath(
                         url=to_absolute_url(endpoint_path.url, url),
                         method=HTTPMethod.GET
@@ -54,7 +54,11 @@ class KrawenCrawlerRunner:
                     if is_valid_url(to_absolute_url(endpoint_path.url, url))
                 ]
 
-                self.waiting_requests.update(new_found_requests)
+                self.waiting_requests.update([
+                    endpoint_path
+                    for endpoint_path in new_endpoint_paths
+                    if not await self.crawler.is_exists(endpoint_path)
+                ])
 
     async def processing_request_wrap(self, endpoint_path: EndpointPath):
         try:
