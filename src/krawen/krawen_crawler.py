@@ -56,25 +56,16 @@ class KrawenCrawler:
         await self.stop()
 
 
-    async def download(self, endpoint_path: EndpointPath, exists_skip: bool = False) -> HTTPResponseInfo | None:
+    async def get_response_info(self, endpoint_path: EndpointPath) -> HTTPResponseInfo:
         if not endpoint_path.url.is_absolute():
             raise URLNotAbsoluteError(f'Passed url "{endpoint_path.url}" is not absolute')
-        if not self.should_download(endpoint_path.url):
-            raise URLOutOfBoundError(f'URL "{endpoint_path.url}" : {endpoint_path.method} is out of processing bound')
-
-        if exists_skip:
-            try:
-                await self.endpoint_store.get_endpoint(endpoint_path)
-                return None
-            except EndpointNotFoundError:
-                pass
 
         async with self.http_client.request(
                 url=endpoint_path.url,
                 method=endpoint_path.method.value,
                 auto_decompress=False
         ) as response:
-            response_info = HTTPResponseInfo(
+            return HTTPResponseInfo(
                 http_version=f'{response.version.major}.{response.version.minor}',
                 status_code=response.status,
                 reason=response.reason,
@@ -84,6 +75,23 @@ class KrawenCrawler:
                     for value in response.headers.getall(key)
                 ]
             )
+
+    async def download(self, endpoint_path: EndpointPath, exists_skip: bool = False):
+        if not endpoint_path.url.is_absolute():
+            raise URLNotAbsoluteError(f'Passed url "{endpoint_path.url}" is not absolute')
+        if not self.should_download(endpoint_path.url):
+            raise URLOutOfBoundError(f'URL "{endpoint_path.url}" : {endpoint_path.method} is out of processing bound')
+
+        if exists_skip:
+            if self.is_exists(endpoint_path):
+                return
+
+        async with self.http_client.request(
+                url=endpoint_path.url,
+                method=endpoint_path.method.value,
+                auto_decompress=False
+        ) as response:
+            response_info = await self.get_response_info(endpoint_path)
 
             await self.endpoint_store.put_endpoint(
                 endpoint_path,
@@ -168,6 +176,13 @@ class KrawenCrawler:
                 return url.origin() == self.root_origin_url
             except ValueError:
                 return False
+
+    async def is_exists(self, endpoint_path: EndpointPath) -> bool:
+        try:
+            await self.endpoint_store.get_endpoint(endpoint_path)
+            return True
+        except EndpointNotFoundError:
+            return False
 
     @staticmethod
     def is_page(response_info: HTTPResponseInfo) -> bool:

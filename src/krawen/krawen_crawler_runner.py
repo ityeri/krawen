@@ -35,10 +35,12 @@ class KrawenCrawlerRunner:
         await self.stop()
 
     async def processing_request(self, endpoint_path: EndpointPath):
-        response_info = await self.crawler.download(endpoint_path, self.exists_skip)
-
-        if response_info is None:
+        if await self.crawler.is_exists(endpoint_path):
             self.logger.info(f'Url "{endpoint_path.url}" is already exists. skip download')
+        else:
+            await self.crawler.download(endpoint_path)
+
+        response_info = await self.crawler.get_response_info(endpoint_path)
 
         if self.crawler.is_page(response_info):
             # sub_requests = await crawler.get_network_requests(endpoint_path.url)
