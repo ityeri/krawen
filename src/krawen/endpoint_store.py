@@ -15,7 +15,7 @@ class DuplicateEndpointError(Exception): ...
 class EndpointNotFoundError(Exception): ...
 
 
-class EndpointStore(ABC): # TODO rename
+class EndpointStore(ABC):
     """
     얘는 파일 관리 역할은 안함
     """
