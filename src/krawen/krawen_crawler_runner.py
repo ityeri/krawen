@@ -23,7 +23,7 @@ class KrawenCrawlerRunner:
         self.running_tasks: set[Task] = set()
 
     async def init(self):
-        await self.crawler.start()
+        await self.crawler.init()
     async def stop(self):
         await self.crawler.stop()
 

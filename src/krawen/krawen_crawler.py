@@ -33,7 +33,7 @@ class KrawenCrawler:
         self.http_client: ClientSession | None = None
 
 
-    async def start(self):
+    async def init(self):
         self.playwright = await async_playwright().start()
         self.browser = await self.playwright.firefox.launch()
         self.http_client = ClientSession(
@@ -50,7 +50,7 @@ class KrawenCrawler:
         self.http_client = None
 
     async def __aenter__(self):
-        await self.start()
+        await self.init()
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.stop()
