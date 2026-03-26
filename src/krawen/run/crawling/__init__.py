@@ -46,8 +46,16 @@ async def main():
     autosave_interval = args.save_interval
     tick_interval = args.tick_interval
 
-    file_store = AsyncLocalFileStore(os.path.join(working_dir, 'store/'))
-    endpoint_store = JsonEndpointStore(os.path.join(working_dir, 'endpoints.json'), file_store=file_store)
+    store_path = os.path.join(working_dir, 'store/')
+    json_file_path = os.path.join(working_dir, 'endpoints.json')
+
+    os.makedirs(store_path, exist_ok=True)
+    if not os.path.exists(json_file_path):
+        with open(json_file_path, 'w', encoding='utf-8') as f:
+            f.write('{}')
+
+    file_store = AsyncLocalFileStore(store_path)
+    endpoint_store = JsonEndpointStore(json_file_path, file_store=file_store)
     crawler = KrawenCrawler(endpoint_store=endpoint_store, root_origin_url=root_origin_url)
     crawler_runner = KrawenCrawlerRunner(
         crawler,
