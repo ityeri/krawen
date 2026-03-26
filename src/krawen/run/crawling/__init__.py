@@ -13,7 +13,7 @@ from krawen.krawen_crawler_runner import KrawenCrawlerRunner
 
 async def run_autosave(json_store: JsonEndpointStore, interval: float):
     while True:
-        await json_store.save()
+        await json_store.save(indent=4)
         await asyncio.sleep(interval)
 
 
