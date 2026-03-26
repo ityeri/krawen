@@ -1,7 +1,5 @@
 from yarl import URL
 
-from .setup_logging import setup_logging
-
 
 def to_absolute_url(origin_url: URL, target_url: URL) -> URL:
     if target_url.is_absolute():
@@ -27,7 +25,6 @@ def is_valid_url(url: URL) -> bool:
 
 
 __all__ = [
-    'setup_logging',
     'to_absolute_url',
     'parse_elements_from_tag_attr'
 ]
