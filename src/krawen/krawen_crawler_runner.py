@@ -40,21 +40,21 @@ class KrawenCrawlerRunner:
         else:
             await self.crawler.download(endpoint_path)
 
-        response_info = await self.crawler.get_response_info(endpoint_path)
+            response_info = await self.crawler.get_response_info(endpoint_path) # TODO test, commi
 
-        if self.crawler.is_page(response_info):
-            # sub_requests = await crawler.get_network_requests(endpoint_path.url)
-            sub_urls = await self.crawler.get_page_sub_urls(endpoint_path.url)
+            if self.crawler.is_page(response_info):
+                # sub_requests = await crawler.get_network_requests(endpoint_path.url)
+                sub_urls = await self.crawler.get_page_sub_urls(endpoint_path.url)
 
-            new_found_requests = [
-                EndpointPath(
-                    url=to_absolute_url(endpoint_path.url, url),
-                    method=HTTPMethod.GET
-                ) for url in sub_urls
-                if is_valid_url(to_absolute_url(endpoint_path.url, url))
-            ]
+                new_found_requests = [
+                    EndpointPath(
+                        url=to_absolute_url(endpoint_path.url, url),
+                        method=HTTPMethod.GET
+                    ) for url in sub_urls
+                    if is_valid_url(to_absolute_url(endpoint_path.url, url))
+                ]
 
-            self.waiting_requests.update(new_found_requests)
+                self.waiting_requests.update(new_found_requests)
 
     async def processing_request_wrap(self, endpoint_path: EndpointPath):
         try:
