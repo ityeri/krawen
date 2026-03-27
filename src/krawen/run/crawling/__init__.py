@@ -38,6 +38,10 @@ async def main():
         '--tick-interval', type=float,
         help='Crawler tick interval', default=0.5, nargs='?'
     )
+    parser.add_argument(
+        '-m', '--max-tasks', type=int,
+        help='Max tasks that can executing concurrently. (0 is no limit)', default=2024, nargs='?'
+    )
     args = parser.parse_args()
 
     seed_urls = map(URL, args.seed_urls)
@@ -45,6 +49,7 @@ async def main():
     working_dir = args.dir
     autosave_interval = args.save_interval
     tick_interval = args.tick_interval
+    max_tasks = args.max_tasks if args.max_tasks != 0 else None
 
     store_path = os.path.join(working_dir, 'store/')
     json_file_path = os.path.join(working_dir, 'endpoints.json')
@@ -60,7 +65,8 @@ async def main():
     crawler_runner = KrawenCrawlerRunner(
         crawler,
         seed_requests={EndpointPath(URL(seed_url), HTTPMethod.GET) for seed_url in seed_urls},
-        tick_interval=tick_interval
+        tick_interval=tick_interval,
+        max_tasks=max_tasks
     )
 
     reger.setup_logging()

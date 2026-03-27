@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from asyncio import Task
+from itertools import islice
 
 from krawen import EndpointPath, HTTPMethod
 from krawen import KrawenCrawler
@@ -14,11 +15,14 @@ class KrawenCrawlerRunner:
             crawler: KrawenCrawler,
             seed_requests: set[EndpointPath],
             tick_interval: float = 0.5,
-            exists_skip: bool = True
+            exists_skip: bool = True,
+            max_tasks: int | None = None
     ):
         self.crawler: KrawenCrawler = crawler
         self.tick_interval: float = tick_interval
         self.exists_skip: bool = exists_skip
+        self.max_tasks: int | None = max_tasks
+
         self.logger: logging.Logger = logging.getLogger(self.__class__.__name__)
 
         self.waiting_requests: set[EndpointPath] = seed_requests
@@ -74,14 +78,33 @@ class KrawenCrawlerRunner:
 
     async def run(self):
         while True:
-            for endpoint_path in self.waiting_requests:
-                task = asyncio.create_task(self.processing_request_wrap(endpoint_path))
-                self.running_tasks.add(task)
-                task.add_done_callback(lambda t: self.running_tasks.discard(t))
+            if self.max_tasks is None:
+                for endpoint_path in self.waiting_requests:
+                    task = asyncio.create_task(self.processing_request_wrap(endpoint_path))
+                    self.running_tasks.add(task)
+                    task.add_done_callback(lambda t: self.running_tasks.discard(t))
 
-            started_tasks = len(self.waiting_requests)
-            self.waiting_requests.clear()
+                started_tasks = len(self.waiting_requests)
+                self.waiting_requests.clear()
 
+            else:
+                new_task_nums = self.max_tasks - len(self.running_tasks)
+
+                if 0 < new_task_nums:
+                    new_processing_requests = set(islice(self.waiting_requests, new_task_nums))
+
+                    for endpoint_path in new_processing_requests:
+                        task = asyncio.create_task(self.processing_request_wrap(endpoint_path))
+                        self.running_tasks.add(task)
+                        task.add_done_callback(lambda t: self.running_tasks.discard(t))
+
+                    started_tasks = len(new_processing_requests)
+                    self.waiting_requests -= new_processing_requests
+
+                else:
+                    started_tasks = 0
+
+            self.logger.info(f'{len(self.waiting_requests)} tasks are waiting')
             self.logger.info(f'{started_tasks} tasks are started')
             self.logger.info(f'{len(self.running_tasks)} tasks are currently running')
 
