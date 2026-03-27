@@ -13,7 +13,7 @@ class KrawenCrawlerRunner:
     def __init__(
             self,
             crawler: KrawenCrawler,
-            seed_requests: set[EndpointPath],
+            seed_endpoint_paths: set[EndpointPath],
             tick_interval: float = 0.5,
             exists_skip: bool = True,
             max_tasks: int | None = None
@@ -25,7 +25,7 @@ class KrawenCrawlerRunner:
 
         self.logger: logging.Logger = logging.getLogger(self.__class__.__name__)
 
-        self.waiting_requests: set[EndpointPath] = seed_requests
+        self.pending_endpoint_paths: set[EndpointPath] = seed_endpoint_paths
         self.running_tasks: set[Task] = set()
 
     async def init(self):
@@ -38,7 +38,7 @@ class KrawenCrawlerRunner:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.stop()
 
-    async def processing_request(self, endpoint_path: EndpointPath):
+    async def processing_endpoint_path(self, endpoint_path: EndpointPath):
         if await self.crawler.is_exists(endpoint_path):
             self.logger.warning(f'Url "{endpoint_path.url}" is already exists. skip download')
         else:
@@ -58,15 +58,15 @@ class KrawenCrawlerRunner:
                     if is_valid_url(to_absolute_url(endpoint_path.url, url))
                 ]
 
-                self.waiting_requests.update([
+                self.pending_endpoint_paths.update([
                     endpoint_path
                     for endpoint_path in new_endpoint_paths
                     if not await self.crawler.is_exists(endpoint_path)
                 ])
 
-    async def processing_request_wrap(self, endpoint_path: EndpointPath):
+    async def processing_endpoint_path_wrap(self, endpoint_path: EndpointPath):
         try:
-            await self.processing_request(endpoint_path)
+            await self.processing_endpoint_path(endpoint_path)
         except URLOutOfBoundError:
             pass
         except URLNotAbsoluteError:
@@ -79,32 +79,32 @@ class KrawenCrawlerRunner:
     async def run(self):
         while True:
             if self.max_tasks is None:
-                for endpoint_path in self.waiting_requests:
-                    task = asyncio.create_task(self.processing_request_wrap(endpoint_path))
+                for endpoint_path in self.pending_endpoint_paths:
+                    task = asyncio.create_task(self.processing_endpoint_path_wrap(endpoint_path))
                     self.running_tasks.add(task)
                     task.add_done_callback(lambda t: self.running_tasks.discard(t))
 
-                started_tasks = len(self.waiting_requests)
-                self.waiting_requests.clear()
+                started_tasks = len(self.pending_endpoint_paths)
+                self.pending_endpoint_paths.clear()
 
             else:
                 new_task_nums = self.max_tasks - len(self.running_tasks)
 
                 if 0 < new_task_nums:
-                    new_processing_requests = set(islice(self.waiting_requests, new_task_nums))
+                    staged_endpoint_paths = set(islice(self.pending_endpoint_paths, new_task_nums))
 
-                    for endpoint_path in new_processing_requests:
-                        task = asyncio.create_task(self.processing_request_wrap(endpoint_path))
+                    for endpoint_path in staged_endpoint_paths:
+                        task = asyncio.create_task(self.processing_endpoint_path_wrap(endpoint_path))
                         self.running_tasks.add(task)
                         task.add_done_callback(lambda t: self.running_tasks.discard(t))
 
-                    started_tasks = len(new_processing_requests)
-                    self.waiting_requests -= new_processing_requests
+                    started_tasks = len(staged_endpoint_paths)
+                    self.pending_endpoint_paths -= staged_endpoint_paths
 
                 else:
                     started_tasks = 0
 
-            self.logger.info(f'{len(self.waiting_requests)} tasks are waiting')
+            self.logger.info(f'{len(self.pending_endpoint_paths)} tasks are waiting')
             self.logger.info(f'{started_tasks} tasks are started')
             self.logger.info(f'{len(self.running_tasks)} tasks are currently running')
 

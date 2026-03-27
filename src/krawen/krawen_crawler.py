@@ -121,18 +121,18 @@ class KrawenCrawler:
             return urls
 
 
-    async def get_network_requests(self, target_url: URL) -> list[EndpointPath]:
+    async def simulate_page_network(self, target_url: URL) -> list[EndpointPath]:
         if not target_url.is_absolute():
             raise URLNotAbsoluteError(f'Passed url "{target_url}" is not absolute')
 
-        network_requests: list[EndpointPath] = list()
+        endpoints: list[EndpointPath] = list()
         context = await self.browser.new_context(
             viewport=ViewportSize(width=1920, height=2160)
         )
         page = await context.new_page()
 
         async def on_request(request: Request):
-            network_requests.append(EndpointPath(
+            endpoints.append(EndpointPath(
                 url=to_absolute_url(self.root_origin_url, URL(request.url)),
                 method=HTTPMethod.from_name(request.method)
             ))
@@ -161,7 +161,7 @@ class KrawenCrawler:
         await page.close()
         await context.close()
 
-        return network_requests
+        return endpoints
 
 
     def should_download(self, url: URL) -> bool:

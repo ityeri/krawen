@@ -64,7 +64,7 @@ async def main():
     crawler = KrawenCrawler(endpoint_store=endpoint_store, root_origin_url=root_origin_url)
     crawler_runner = KrawenCrawlerRunner(
         crawler,
-        seed_requests={EndpointPath(URL(seed_url), HTTPMethod.GET) for seed_url in seed_urls},
+        seed_endpoint_paths={EndpointPath(URL(seed_url), HTTPMethod.GET) for seed_url in seed_urls},
         tick_interval=tick_interval,
         max_tasks=max_tasks
     )
