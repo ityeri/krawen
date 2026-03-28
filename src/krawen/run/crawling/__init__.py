@@ -76,8 +76,11 @@ async def main():
         crawling_task = asyncio.create_task(crawler_runner.run())
         autosave_task = asyncio.create_task(run_autosave(endpoint_store, autosave_interval))
 
-        await crawling_task
-        autosave_task.cancel()
+        try:
+            await crawling_task
+            autosave_task.cancel()
+        except asyncio.CancelledError:
+            pass
 
 
 __all__ = [

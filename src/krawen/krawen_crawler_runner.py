@@ -31,6 +31,9 @@ class KrawenCrawlerRunner:
     async def init(self):
         await self.crawler.init()
     async def stop(self):
+        for task in self.running_tasks:
+            task.cancel()
+
         await self.crawler.stop()
 
     async def __aenter__(self):
