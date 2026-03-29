@@ -4,12 +4,36 @@
 Primarily, it consists of `KrawenCrawler`, `KrawenMirrorServer`, and `KrawenCrawlerRunner`.
 
 # installation
-TODO pypi distribution (but it can install easily!)
+TODO pypi distribution
+
+* `python >= 3.12`
 
 ```shell
 pip install git+https://github.com/ityeri/krawen
 ```
 
+# runs
+
+```shell
+python -m krawen.run.crawling http://example.com
+```
+
+This command runs a crawling task. It requires a root URL parameter
+
+---
+
+```shell
+python -m krawen.run.server http://example.com
+```
+
+This command runs the mirror server.
+to run this command, the directory structure shown below is required
+
+```
+store/
+ \- ...
+endpoints.json
+```
 
 # features
 
@@ -21,12 +45,8 @@ Finally, it saves all data to the ingested `EndpointStore`
 
 ## `KrawenMirrorServer`
 it's a mirroring server.
-It hosts the crawled data as a web
+It hosts the crawled data as a web (experimental)
 
 ## `KrawenCrawlerRunner`
 it's a recursive crawling runner.
 From the seed endpoint path, it's crawling recursively forever
-
-
-# runs
-
