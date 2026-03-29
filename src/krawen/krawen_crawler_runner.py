@@ -26,13 +26,14 @@ class KrawenCrawlerRunner:
         self.logger: logging.Logger = logging.getLogger(self.__class__.__name__)
 
         self.pending_endpoint_paths: set[EndpointPath] = seed_endpoint_paths
-        self.running_tasks: set[Task] = set()
+        self.running_tasks: dict[EndpointPath, Task] = dict()
 
     async def init(self):
         await self.crawler.init()
     async def stop(self):
-        for task in self.running_tasks:
+        for task in self.running_tasks.keys():
             task.cancel()
+        self.running_tasks.clear()
 
         await self.crawler.stop()
 
@@ -42,6 +43,8 @@ class KrawenCrawlerRunner:
         await self.stop()
 
     async def processing_endpoint_path(self, endpoint_path: EndpointPath):
+        self.logger.debug(f'Processing started for url "{endpoint_path.url}"')
+
         if await self.crawler.is_exists(endpoint_path):
             self.logger.warning(f'Url "{endpoint_path.url}" is already exists. skip download')
         else:
@@ -79,36 +82,35 @@ class KrawenCrawlerRunner:
         except Exception as e:
             self.logger.exception(f'Unknown error occurred while processing endpoint "{endpoint_path.url}": ')
 
+        self.logger.debug(f'Processing done for url "{endpoint_path.url}"')
+
     async def run(self):
         while True:
             if self.max_tasks is None:
-                for endpoint_path in self.pending_endpoint_paths:
-                    task = asyncio.create_task(self.processing_endpoint_path_wrap(endpoint_path))
-                    self.running_tasks.add(task)
-                    task.add_done_callback(lambda t: self.running_tasks.discard(t))
-
-                started_tasks = len(self.pending_endpoint_paths)
-                self.pending_endpoint_paths.clear()
-
+                staged_endpoint_paths = self.pending_endpoint_paths
             else:
                 new_task_nums = self.max_tasks - len(self.running_tasks)
 
                 if 0 < new_task_nums:
                     staged_endpoint_paths = set(islice(self.pending_endpoint_paths, new_task_nums))
-
-                    for endpoint_path in staged_endpoint_paths:
-                        task = asyncio.create_task(self.processing_endpoint_path_wrap(endpoint_path))
-                        self.running_tasks.add(task)
-                        task.add_done_callback(lambda t: self.running_tasks.discard(t))
-
-                    started_tasks = len(staged_endpoint_paths)
-                    self.pending_endpoint_paths -= staged_endpoint_paths
-
                 else:
-                    started_tasks = 0
+                    staged_endpoint_paths = set()
+
+            for endpoint_path in staged_endpoint_paths:
+                if endpoint_path in self.running_tasks: continue
+
+                task = asyncio.create_task(self.processing_endpoint_path_wrap(endpoint_path))
+                self.running_tasks[endpoint_path] = task
+
+                def delete(task: Task):
+                    try: del self.running_tasks[endpoint_path]
+                    except KeyError: pass
+                task.add_done_callback(delete)
+
+            self.pending_endpoint_paths -= staged_endpoint_paths
 
             self.logger.info(f'{len(self.pending_endpoint_paths)} tasks are waiting')
-            self.logger.info(f'{started_tasks} tasks are started')
+            self.logger.info(f'{len(staged_endpoint_paths)} tasks are started')
             self.logger.info(f'{len(self.running_tasks)} tasks are currently running')
 
             await asyncio.sleep(self.tick_interval)

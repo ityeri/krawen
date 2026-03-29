@@ -40,7 +40,7 @@ async def main():
     )
     parser.add_argument(
         '-m', '--max-tasks', type=int,
-        help='Max tasks that can executing concurrently. (0 is no limit)', default=2024, nargs='?'
+        help='Max tasks that can executing concurrently. (0 is no limit)', default=2 ** 16, nargs='?'
     )
     args = parser.parse_args()
 
